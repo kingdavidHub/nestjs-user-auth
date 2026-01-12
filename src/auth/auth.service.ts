@@ -1,7 +1,7 @@
 import { ConflictException, HttpException, Injectable } from '@nestjs/common';
 import { Prisma } from '../generated/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { BcryptHelper } from '../helpers/bcrypt';
+import { BcryptHelper } from '../helpers/bcryptHelper';
 
 // prisma we use it for the types
 // while the prism service is for the db operations
@@ -40,7 +40,8 @@ export class AuthService {
     return this.prisma.user.create({
       data: {
         email: user.email,
-        password: await this.bcryptHelper.hashPassword(user.password),
+        password: user.password,
+        // password: await this.bcryptHelper.hashPassword(user.password),
       },
     });
   }
