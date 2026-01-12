@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { Prisma } from '../generated/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { BcryptHelper } from '../helpers/bcryptHelper';
+import { RegisterDto } from './dto';
 
 @Injectable()
 export class AuthService {
@@ -19,14 +19,7 @@ export class AuthService {
     return !!user;
   }
 
-  async registerUser(user: Prisma.UserCreateInput) {
-    if (!user.email || !user.password) {
-      throw new HttpException(
-        'Missing required fields',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
+  async registerUser(user: RegisterDto) {
     const userExits = await this.checkUserExits(user.email);
 
     if (userExits) {
@@ -52,6 +45,45 @@ export class AuthService {
         'Failed to create user',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
+    }
+  }
+
+  async loginUser(user: RegisterDto) {
+    try {
+      // Check if user exists
+      const existingUser = await this.prisma.user.findUnique({
+        where: { email: user.email },
+      });
+
+      if (!existingUser) {
+        throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
+      }
+
+      // Compare password
+      const passwordValid = await this.bcryptHelper.comparePasswords(
+        user.password,
+        existingUser.password,
+      );
+
+      if (!passwordValid) {
+        throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
+      }
+
+      // Return success response (exclude password)
+      return {
+        message: `Welcome ${existingUser.email.split('@')[0]}`,
+        user: {
+          id: existingUser.id,
+          email: existingUser.email,
+        },
+      };
+    } catch (error) {
+      // Re-throw HttpExceptions
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      // Handle unexpected errors
+      throw new HttpException('Login failed', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 }
