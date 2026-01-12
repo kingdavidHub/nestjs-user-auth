@@ -8,20 +8,30 @@ export class PrismaService
   extends PrismaClient
   implements OnModuleInit, OnModuleDestroy
 {
-  adapter: PrismaPg = new PrismaPg({
-    connectionString: process.env.DATABASE_URL!,
-  });
-
   constructor(private configService: ConfigService) {
+    const dbUrl = configService.get<string>('DATABASE_URL');
+
+    if (!dbUrl) {
+      throw new Error('DATABASE_URL is not defined in environment variables');
+    }
+
+    console.log('Connecting to database...');
+
     super({
       adapter: new PrismaPg({
-        connectionString: configService.get<string>('DATABASE_URL') as string,
+        connectionString: dbUrl,
       }),
     });
   }
 
   async onModuleInit() {
-    await this.$connect();
+    try {
+      await this.$connect();
+      console.log('Database connected successfully');
+    } catch (error) {
+      console.error('Database connection failed:', error);
+      throw error;
+    }
   }
 
   async onModuleDestroy() {
