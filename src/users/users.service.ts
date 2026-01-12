@@ -5,8 +5,23 @@ import { PrismaService } from '../prisma/prisma.service';
 export class UsersService {
   constructor(private prisma: PrismaService) {}
 
-  async findAllUsers() {
+  async findAllUsers(userEmail: string) {
     try {
+
+      // find a specific users
+      if (userEmail) {
+        const user = await this.prisma.user.findUnique({
+          where: { email: userEmail },
+          select: {
+            id: true,
+            email: true,
+            createdAt: true,
+          },
+        });
+        return user;
+      }
+
+      // returns all users
       const [users, totalUsers] = await Promise.all([
         this.prisma.user.findMany({
           select: {
