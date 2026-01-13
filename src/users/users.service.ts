@@ -1,9 +1,14 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { Prisma } from '../generated/client';
+import { BcryptHelper } from '../helpers/bcryptHelper';
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private bcryptHelper: BcryptHelper,
+  ) {}
 
   async findAllUsers(userEmail: string) {
     try {
@@ -69,33 +74,64 @@ export class UsersService {
     }
   }
 
-
-  async deleteUserById(id: number){
+  async updateUserById(id: number, body: Prisma.UserUpdateInput) {
     try {
       const user = await this.findUserById(id);
-      if(!user){
+      if (!user) {
         throw new HttpException('User not found', HttpStatus.NOT_FOUND);
       }
 
-      const deletedUser = await this.prisma.user.delete({
-        where: {id}
-      })
-    
-      if(!deletedUser){
-        throw new HttpException('Failed to delete user', HttpStatus.INTERNAL_SERVER_ERROR);
-      }
+      const updatedUser = await this.prisma.user.update({
+        where: { id },
+        data: {
+          password: await this.bcryptHelper.hashPassword(
+            body.password as string,
+          ),
+          email: body.email,
+        },
+        select: {
+          id: true,
+          email: true,
+          createdAt: true,
+        },
+      });
 
       return {
-        message: 'User deleted successfully',
-        user: deletedUser
-      }
-
+        message: 'User updated successfully',
+        user: updatedUser,
+      };
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
       }
       throw new HttpException(
-        'Failed to fetch users',
+        'Failed to update user',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async deleteUserById(id: number) {
+    try {
+      const user = await this.findUserById(id);
+      if (!user) {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
+
+      const deletedUser = await this.prisma.user.delete({
+        where: { id },
+      });
+
+      return {
+        message: 'User deleted successfully',
+        user: deletedUser,
+      };
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new HttpException(
+        'Failed to delete user',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
