@@ -93,6 +93,7 @@ export class UsersService {
           id: true,
           email: true,
           createdAt: true,
+          updatedAt: true,
         },
       });
 
@@ -111,6 +112,8 @@ export class UsersService {
     }
   }
 
+
+  // TODO: Update this service to soft delete implementation
   async deleteUserById(id: number) {
     try {
       const user = await this.findUserById(id);

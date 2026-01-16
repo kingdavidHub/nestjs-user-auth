@@ -1,65 +1,224 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# NestJS User Authentication API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A robust and scalable user authentication and management REST API built with NestJS, Prisma, and PostgreSQL.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 📋 Description
 
-## Description
+This project provides a complete user authentication system with user management capabilities. It demonstrates best practices for building production-ready APIs with NestJS, including:
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- User registration and authentication
+- Password hashing with bcrypt
+- CRUD operations for user management
+- Database management with Prisma ORM
+- Input validation with class-validator
+- Structured error handling
+- TypeScript type safety
 
-## Project setup
+## ✨ Features
+
+- **Authentication**
+  - User registration with email and password
+  - User login
+  - Password encryption using bcrypt
+
+- **User Management**
+  - Get all users or filter by email
+  - Get user by ID
+  - Update user information
+  - Delete user (with TODO for soft delete implementation)
+
+- **Database**
+  - PostgreSQL database with Prisma ORM
+  - Type-safe database queries
+  - Database migrations support
+
+## 🛠️ Tech Stack
+
+- **Framework:** NestJS 11.x
+- **Language:** TypeScript 5.x
+- **Database:** PostgreSQL
+- **ORM:** Prisma 7.x
+- **Validation:** class-validator, class-transformer
+- **Password Hashing:** bcrypt
+- **Testing:** Jest
+- **Linting:** ESLint with Prettier
+
+## 📦 Installation
 
 ```bash
-$ yarn install
+# Install dependencies
+yarn install
 ```
 
-## Compile and run the project
+## ⚙️ Environment Setup
+
+Create a `.env` file in the root directory:
+
+```env
+DATABASE_URL="postgresql://username:password@localhost:5432/database_name"
+PORT=3000
+```
+
+## 🗄️ Database Setup
 
 ```bash
-# development
-$ yarn run start
+# Generate Prisma Client
+npx prisma generate
 
-# watch mode
-$ yarn run start:dev
+# Run database migrations
+npx prisma migrate dev
 
-# production mode
-$ yarn run start:prod
+# Open Prisma Studio (Database GUI)
+npx prisma studio
 ```
 
-## Run tests
+## 🚀 Running the Application
 
 ```bash
-# unit tests
-$ yarn run test
+# Development mode
+yarn start:dev
 
-# e2e tests
-$ yarn run test:e2e
+# Production mode
+yarn build
+yarn start:prod
 
-# test coverage
-$ yarn run test:cov
+# Debug mode
+yarn start:debug
 ```
 
-## Deployment
+The API will be available at `http://localhost:3000`
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+## 📡 API Endpoints
+
+### Authentication
+
+| Method | Endpoint         | Description         | Body                                                         |
+| ------ | ---------------- | ------------------- | ------------------------------------------------------------ |
+| POST   | `/auth/register` | Register a new user | `{ "email": "user@example.com", "password": "password123" }` |
+| POST   | `/auth/login`    | Login user          | `{ "email": "user@example.com", "password": "password123" }` |
+
+### Users
+
+| Method | Endpoint     | Description                      | Query/Params                                                     |
+| ------ | ------------ | -------------------------------- | ---------------------------------------------------------------- |
+| GET    | `/users`     | Get all users or filter by email | `?email=user@example.com`                                        |
+| GET    | `/users/:id` | Get user by ID                   | -                                                                |
+| PATCH  | `/users/:id` | Update user                      | `{ "email": "newemail@example.com", "password": "newpassword" }` |
+| DELETE | `/users/:id` | Delete user                      | -                                                                |
+
+### Example Requests
+
+**Register a new user:**
+
+```bash
+curl -X POST http://localhost:3000/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","password":"password123"}'
+```
+
+**Login:**
+
+```bash
+curl -X POST http://localhost:3000/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","password":"password123"}'
+```
+
+**Get all users:**
+
+```bash
+curl http://localhost:3000/users
+```
+
+**Get user by email:**
+
+```bash
+curl http://localhost:3000/users?email=test@example.com
+```
+
+## 🧪 Testing
+
+```bash
+# Unit tests
+yarn test
+
+# E2E tests
+yarn test:e2e
+
+# Test coverage
+yarn test:cov
+
+# Watch mode
+yarn test:watch
+```
+
+## 📁 Project Structure
+
+```
+src/
+├── auth/              # Authentication module
+│   ├── dto/          # Data transfer objects
+│   ├── auth.controller.ts
+│   ├── auth.service.ts
+│   └── auth.module.ts
+├── users/            # Users module
+│   ├── dto/          # Data transfer objects
+│   ├── users.controller.ts
+│   ├── users.service.ts
+│   └── users.module.ts
+├── prisma/           # Prisma service
+│   ├── prisma.service.ts
+│   └── prisma.module.ts
+├── helpers/          # Helper utilities
+│   ├── bcryptHelper.ts
+│   └── helpers.module.ts
+├── generated/        # Prisma generated client
+├── app.module.ts     # Root module
+└── main.ts           # Application entry point
+```
+
+## 🔒 Security Features
+
+- Password hashing using bcrypt with configurable salt rounds
+- Input validation using class-validator decorators
+- Type-safe database queries with Prisma
+- Environment variable configuration
+
+## 🚧 TODO
+
+- [ ] Implement JWT authentication
+- [ ] Add refresh token mechanism
+- [ ] Implement soft delete for users
+- [ ] Add role-based access control (RBAC)
+- [ ] Add email verification
+- [ ] Add password reset functionality
+- [ ] Implement rate limiting
+- [ ] Add API documentation with Swagger
+- [ ] Add comprehensive error handling with exception filters
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## 📝 License
+
+This project is [UNLICENSED](LICENSE).
+
+## 🔗 Resources
+
+- [NestJS Documentation](https://docs.nestjs.com)
+- [Prisma Documentation](https://www.prisma.io/docs)
+- [PostgreSQL Documentation](https://www.postgresql.org/docs)
+
+## 👤 Author
+
+**kingdavidHub**
+
+- GitHub: [@kingdavidHub](https://github.com/kingdavidHub)
+
+---
+
+Built with ❤️ using NestJS
 
 If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
 
