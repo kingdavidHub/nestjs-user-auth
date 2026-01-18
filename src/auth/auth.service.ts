@@ -26,64 +26,48 @@ export class AuthService {
       throw new HttpException('User already exists', HttpStatus.CONFLICT);
     }
 
-    try {
-      const createdUser = await this.prisma.user.create({
-        data: {
-          email: user.email,
-          password: await this.bcryptHelper.hashPassword(user.password),
-        },
-        select: {
-          id: true,
-          email: true,
-          createdAt: true,
-          updatedAt: true,
-        },
-      });
-      return createdUser;
-    } catch (error) {
-      throw new HttpException(
-        'Failed to create user',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
+    const createdUser = await this.prisma.user.create({
+      data: {
+        email: user.email,
+        password: await this.bcryptHelper.hashPassword(user.password),
+      },
+      select: {
+        id: true,
+        email: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+    return createdUser;
   }
 
   async loginUser(user: RegisterDto) {
-    try {
-      // Check if user exists
-      const existingUser = await this.prisma.user.findUnique({
-        where: { email: user.email },
-      });
+    // Check if user exists
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email: user.email },
+    });
 
-      if (!existingUser) {
-        throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
-      }
-
-      // Compare password
-      const passwordValid = await this.bcryptHelper.comparePasswords(
-        user.password,
-        existingUser.password,
-      );
-
-      if (!passwordValid) {
-        throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
-      }
-
-      // Return success response (exclude password)
-      return {
-        message: `Welcome ${existingUser.email.split('@')[0]}`,
-        user: {
-          id: existingUser.id,
-          email: existingUser.email,
-        },
-      };
-    } catch (error) {
-      // Re-throw HttpExceptions
-      if (error instanceof HttpException) {
-        throw error;
-      }
-      // Handle unexpected errors
-      throw new HttpException('Login failed', HttpStatus.INTERNAL_SERVER_ERROR);
+    if (!existingUser) {
+      throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
     }
+
+    // Compare password
+    const passwordValid = await this.bcryptHelper.comparePasswords(
+      user.password,
+      existingUser.password,
+    );
+
+    if (!passwordValid) {
+      throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
+    }
+
+    // Return success response (exclude password)
+    return {
+      message: `Welcome ${existingUser.email.split('@')[0]}`,
+      user: {
+        id: existingUser.id,
+        email: existingUser.email,
+      },
+    };
   }
 }
